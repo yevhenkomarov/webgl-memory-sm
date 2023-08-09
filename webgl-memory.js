@@ -668,16 +668,20 @@
       target = isCubemapFace(target) ? TEXTURE_CUBE_MAP : target;
       const obj = bindings.get(target);
       if (!obj) {
-        throw new Error(`no texture bound to ${target}`);
+        return;
       }
       const info = webglObjectToMemory.get(obj);
       if (!info) {
-        throw new Error(`unknown texture ${obj}`);
+        return;
       }
       return info;
     }
 
     function updateMipLevel(info, target, level, internalFormat, width, height, depth, type) {
+      if (!info) {
+        return;
+      }
+
       const oldSize = info.size;
       const newMipSize = getBytesForMip(internalFormat, width, height, depth, type);
 
@@ -917,6 +921,11 @@
         }
         const [target] = args;
         const info = getTextureInfo(target);
+
+        if (!info) {
+          return;
+        }
+
         const baseMipNdx = info.parameters ? info.parameters.get(TEXTURE_BASE_LEVEL) || 0 : 0;
         const maxMipNdx = info.parameters ? info.parameters.get(TEXTURE_MAX_LEVEL) || 1024 : 1024;
         let {width, height, depth, internalFormat, type} = info.mips[baseMipNdx][0];
@@ -1023,6 +1032,11 @@
         }
         let [target, pname, value] = args;
         const info = getTextureInfo(target);
+
+        if (!info) {
+          info = {};
+        }
+
         info.parameters = info.parameters || new Map();
         info.parameters.set(pname, value);
       },
